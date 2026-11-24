@@ -35,6 +35,8 @@
       <input id="tabela" type="text" placeholder="Ou digite o nome da tabela..." />
       <button onclick="gerar('gerar-crud-python')">Gerar Python (.py)</button>
       <button class="sec" onclick="gerar('gerar-crud-js')">Gerar JS (.js)</button>
+      <button  onclick="gerarModelo('gerar-modelo')">Gerar Modelo (.py)</button>
+      <button  onclick="gerarTodos('gerar-todos-modelo')">Gerar Todos modelos (.py)</button>
     </div>
 
     <textarea id="resultado" placeholder="Selecione uma tabela e clique em Gerar..."></textarea>
@@ -73,6 +75,38 @@
       out.value = "Gerando código...";
       try {
         const resp = await fetch(`/api/v1/dev/${rota}/${tabela}`);
+        const texto = await resp.text();
+        if (!resp.ok) throw new Error(texto);
+        out.value = texto;
+      } catch (err) {
+        out.value = "Erro: " + err.message;
+      }
+    }
+    async function gerarModelo(rota) {
+      const tabela = document.getElementById("tabela").value.trim();
+      const out = document.getElementById("resultado");
+      if (!tabela) return alert("Selecione ou digite o nome da tabela.");
+
+      ultimoTipo = rota.endsWith("js") ? "js" : "py";
+      out.value = "Gerando código...";
+      try {
+        const resp = await fetch(`/api/v1/dev/${rota}/${tabela}`);
+        const texto = await resp.text();
+        if (!resp.ok) throw new Error(texto);
+        out.value = texto;
+      } catch (err) {
+        out.value = "Erro: " + err.message;
+      }
+    }
+    async function gerarTodos(rota) {
+      const tabela = document.getElementById("tabela").value.trim();
+      const out = document.getElementById("resultado");
+      if (!tabela) return alert("Selecione ou digite o nome da tabela.");
+
+      ultimoTipo = rota.endsWith("js") ? "js" : "py";
+      out.value = "Gerando código...";
+      try {
+        const resp = await fetch(`/api/v1/dev/${rota}`);
         const texto = await resp.text();
         if (!resp.ok) throw new Error(texto);
         out.value = texto;
