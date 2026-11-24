@@ -21,7 +21,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pyinstaller
+          pip install pyinstaller pillow
+
+      - name: Converter PNG em ICO automaticamente
+        # Troque 'frontend/icon.png' pelo caminho exato do ícone que você salvou
+        run: |
+          python -c "from PIL import Image; Image.open('frontend/icon.png').save('icone.ico', format='ICO', sizes=[(256, 256)])"
 
       - name: Gerar arquivo .exe
         run: |
