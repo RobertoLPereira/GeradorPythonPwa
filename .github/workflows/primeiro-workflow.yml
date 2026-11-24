@@ -25,7 +25,7 @@ jobs:
 
       - name: Gerar arquivo .exe
         run: |
-          pyinstaller --onefile --name "GeradorCRUD" --icon="frontend/favicon.ico" --add-data "frontend;frontend" --paths "." backend/apis/main.py
+          pyinstaller --onefile --noupx --name "GeradorCRUD" --icon="frontend/favicon.ico" --add-data "frontend;frontend" --paths "." backend/apis/main.py
 
       - name: Disponibilizar .exe para download
         uses: actions/upload-artifact@v4
