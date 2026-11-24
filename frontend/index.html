@@ -4,42 +4,72 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gerador CRUD - FastAPI & JS</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#2563eb" />
   <style>
-    body { font-family: system-ui, sans-serif; background: #f1f5f9; color: #1e293b; max-width: 900px; margin: 30px auto; padding: 0 16px; }
+    body { font-family: system-ui, sans-serif; background: #f1f5f9; color: #1e293b; max-width: 960px; margin: 24px auto; padding: 0 16px; }
     .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-    input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; }
+    select, input { flex: 1; min-width: 220px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 15px; background: #fff; }
     button { padding: 10px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; background: #2563eb; color: #fff; }
     button:hover { background: #1d4ed8; }
     button.sec { background: #0f766e; }
-    button.copy { background: #475569; margin-top: 8px; }
-    textarea { width: 100%; height: 380px; font-family: monospace; font-size: 13px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; background: #0f172a; color: #e2e8f0; }
-    .links { margin-top: 12px; font-size: 14px; }
+    button.util { background: #475569; }
+    button.install { background: #7c3aed; display: none; }
+    textarea { width: 100%; height: 400px; font-family: monospace; font-size: 13px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; background: #0f172a; color: #e2e8f0; }
+    .actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 8px; }
   </style>
 </head>
 <body>
   <div class="card">
-    <h2>Gerador de CRUD (Python + JS)</h2>
-    <div class="row">
-      <input id="tabela" type="text" placeholder="Digite o nome da tabela (ex: destinatario, produtos)" />
-      <button onclick="gerar('gerar-crud-python')">Gerar Python (.py)</button>
-      <button class="sec" onclick="gerar('gerar-crud-js')">Gerar Frontend (.js)</button>
+    <div class="header">
+      <h2 style="margin:0;">Gerador de CRUD (Python + JS)</h2>
+      <button id="btn-install" class="install">Instalar App (PWA)</button>
     </div>
 
-    <textarea id="resultado" placeholder="O código gerado aparecerá aqui..."></textarea>
-    <button class="copy" onclick="copiar()">Copiar Código</button>
+    <div class="row">
+      <select id="select-tabela" onchange="document.getElementById('tabela').value = this.value">
+        <option value="">Carregando tabelas do banco...</option>
+      </select>
+      <input id="tabela" type="text" placeholder="Ou digite o nome da tabela..." />
+      <button onclick="gerar('gerar-crud-python')">Gerar Python (.py)</button>
+      <button class="sec" onclick="gerar('gerar-crud-js')">Gerar JS (.js)</button>
+    </div>
 
-    <div class="links">
-      <a href="/docs" target="_blank">Abrir Swagger UI (/docs)</a>
+    <textarea id="resultado" placeholder="Selecione uma tabela e clique em Gerar..."></textarea>
+
+    <div class="actions">
+      <div>
+        <button class="util" onclick="copiar()">Copiar Código</button>
+        <button class="util" onclick="baixarArquivo()">Baixar Arquivo</button>
+      </div>
+      <a href="/docs" target="_blank" style="color:#2563eb; font-weight:bold; text-decoration:none;">Abrir Swagger (/docs) →</a>
     </div>
   </div>
 
   <script>
+    let ultimoTipo = "py";
+
+    // Carrega tabelas automaticamente ao abrir
+    async function carregarTabelas() {
+      const sel = document.getElementById("select-tabela");
+      try {
+        const resp = await fetch("/api/v1/dev/tabelas");
+        const data = await resp.json();
+        sel.innerHTML = '<option value="">-- Selecione uma tabela --</option>' +
+          data.tabelas.map(t => `<option value="${t}">${t}</option>`).join("");
+      } catch (e) {
+        sel.innerHTML = '<option value="">Erro ao carregar tabelas</option>';
+      }
+    }
+
     async function gerar(rota) {
       const tabela = document.getElementById("tabela").value.trim();
       const out = document.getElementById("resultado");
-      if (!tabela) return alert("Informe o nome da tabela.");
+      if (!tabela) return alert("Selecione ou digite o nome da tabela.");
 
+      ultimoTipo = rota.endsWith("js") ? "js" : "py";
       out.value = "Gerando código...";
       try {
         const resp = await fetch(`/api/v1/dev/${rota}/${tabela}`);
@@ -55,8 +85,45 @@
       const out = document.getElementById("resultado");
       if (!out.value) return;
       navigator.clipboard.writeText(out.value);
-      alert("Código copiado para a área de transferência!");
+      alert("Código copiado!");
     }
+
+    function baixarArquivo() {
+      const texto = document.getElementById("resultado").value;
+      const tabela = document.getElementById("tabela").value.trim() || "codigo";
+      if (!texto) return;
+
+      const nomeArquivo = ultimoTipo === "py" ? `${tabela}_router.py` : `${tabela}.js`;
+      const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = nomeArquivo;
+      a.click();
+    }
+
+    // Registra Service Worker (PWA)
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js");
+    }
+
+    // Botão de instalação do PWA
+    let deferredPrompt;
+    const btnInstall = document.getElementById("btn-install");
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      btnInstall.style.display = "inline-block";
+    });
+
+    btnInstall.addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      btnInstall.style.display = "none";
+    });
+
+    carregarTabelas();
   </script>
 </body>
 </html>

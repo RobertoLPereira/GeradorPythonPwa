@@ -82,6 +82,11 @@ def _montar_classe_sqlmodel(insp, nome_tabela: str) -> str:
 
     return "\n".join(linhas)
 
+@gerador_crud_router.get("/tabelas")
+def listar_tabelas(session: Session = Depends(get_session)):
+    """Retorna todas as tabelas disponíveis no banco de dados."""
+    insp = inspect(session.get_bind())
+    return {"tabelas": sorted(insp.get_table_names())}
 
 @gerador_crud_router.get("/gerar-crud-python/{nome_tabela}", response_class=PlainTextResponse)
 def gerar_crud_python(nome_tabela: str, session: Session = Depends(get_session)):

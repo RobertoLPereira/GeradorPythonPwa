@@ -1,0 +1,15 @@
+{
+  "name": "Gerador CRUD Python & JS",
+  "short_name": "GeradorCRUD",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "icone.svg",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
