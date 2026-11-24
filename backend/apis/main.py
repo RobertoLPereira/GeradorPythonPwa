@@ -9,6 +9,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlmodel import Session, select, text
 import uvicorn
+import threading
+import webbrowser
 
 from backend.apis.database_unificado import get_session, inicializar_bancos, mysql_online
 
@@ -47,5 +49,10 @@ caminho_frontend = os.path.join(base_dir, "frontend")
 if os.path.exists(caminho_frontend):
     app.mount("/", StaticFiles(directory=caminho_frontend, html=True), name="frontend")
 
+def abrir_navegador():
+    webbrowser.open("http://localhost:8092")
+
 if __name__ == "__main__":
+    # Aguarda 1.5 segundo para o servidor subir antes de abrir a aba
+    threading.Timer(1.5, abrir_navegador).start()
     uvicorn.run(app, host="0.0.0.0", port=8092, reload=False)
