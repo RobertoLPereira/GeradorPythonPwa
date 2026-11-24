@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from decimal import Decimal
+import sys
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,10 +36,16 @@ def on_startup():
 app.include_router(gerador_router)
 app.include_router(gerador_crud_router)
 
-caminho_frontend = os.path.join("frontend")
+# Identifica se está rodando como .exe (PyInstaller) ou código Python normal
+if getattr(sys, 'frozen', False):
+    base_dir = sys._MEIPASS
+else:
+    base_dir = os.path.abspath(".")
+
+caminho_frontend = os.path.join(base_dir, "frontend")
+
 if os.path.exists(caminho_frontend):
     app.mount("/", StaticFiles(directory=caminho_frontend, html=True), name="frontend")
+
 if __name__ == "__main__":
-    # Inicia o servidor local na porta 8092
-    uvicorn.run("backend.apis.main:app", host="0.0.0.0", port=8092, reload=True)
-#python -m uvicorn backend.apis.main
+    uvicorn.run(app, host="0.0.0.0", port=8092, reload=False)

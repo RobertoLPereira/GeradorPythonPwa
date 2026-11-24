@@ -7,3 +7,9 @@ pythom -m venv .venv
 
 # Instalação de bibliotecas básicas
 pip install pydantic-settings pymysql fastapi dotenv sqlmodel uvicorn pyinstaller httpx httpcore requests
+
+# Criar o arquivos com as bibliotecas importadas
+ pip freeze > requirements.txt.
+
+# configurar o github Actions
+mkdir -p .github/workflows
